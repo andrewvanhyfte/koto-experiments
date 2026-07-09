@@ -1,14 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { assets } from "@/lib/assets";
 import { channelLinks, mainNavItems } from "@/lib/nav-items";
 import { useOverlay } from "@/context/OverlayContext";
+import { ChevronRightIcon, CloseIcon } from "@/components/ui/Icons";
 
 export function MainNavigation() {
-  const { mainNavOpen, closeMainNav, navigate } = useOverlay();
+  const {
+    mainNavOpen,
+    closeMainNav,
+    navigate,
+    goHome,
+    highlightedNavItem,
+  } = useOverlay();
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (highlightedNavItem) {
+      setHoveredItem(highlightedNavItem);
+    }
+  }, [highlightedNavItem]);
 
   if (!mainNavOpen) return null;
 
@@ -18,28 +31,33 @@ export function MainNavigation() {
       aria-label="Main navigation"
     >
       <div className="flex items-center justify-between py-1.5 pl-3 pr-2">
-        <div className="relative h-9 w-12 shrink-0">
+        <button
+          type="button"
+          onClick={goHome}
+          className="relative block h-9 w-12 shrink-0 transition-opacity hover:opacity-80"
+          aria-label="Koto home"
+        >
           <Image
             src={assets.kotoLogoSmileDark}
             alt="Koto"
             fill
             className="object-contain"
           />
-        </div>
+        </button>
         <button
           type="button"
           onClick={closeMainNav}
           aria-label="Close navigation"
-          className="flex size-6 items-center justify-center rounded-sm hover:bg-white/5"
+          className="flex size-6 items-center justify-center rounded-sm text-white/70 transition-colors hover:bg-white/5 hover:text-white"
         >
-          <Image src={assets.closeIcon} alt="" width={10} height={10} />
+          <CloseIcon />
         </button>
       </div>
 
       <div className="px-1.5 pb-2.5 pt-2">
         {mainNavItems.map((item) => {
-          const isWorkHovered = hoveredItem === "Work" && item.label === "Work";
-          const showSubmenu = isWorkHovered && item.children;
+          const isHovered = hoveredItem === item.label;
+          const showSubmenu = isHovered && item.children;
 
           return (
             <div key={item.label}>
@@ -48,28 +66,24 @@ export function MainNavigation() {
                   type="button"
                   onClick={() => navigate(item.href!)}
                   onMouseEnter={() => setHoveredItem(item.label)}
-                  onMouseLeave={() => setHoveredItem(null)}
+                  onMouseLeave={() => setHoveredItem(highlightedNavItem)}
                   className="flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-base text-white transition-colors hover:bg-[#202020]"
                 >
                   <span>{item.label}</span>
                 </button>
               ) : (
-                <div
+                <button
+                  type="button"
                   onMouseEnter={() => setHoveredItem(item.label)}
-                  onMouseLeave={() => setHoveredItem(null)}
-                  className="flex w-full items-center justify-between rounded px-2 py-1.5 text-base text-white transition-colors hover:bg-[#202020]"
+                  onMouseLeave={() => setHoveredItem(highlightedNavItem)}
+                  onClick={() => setHoveredItem(item.label)}
+                  className="flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-base text-white transition-colors hover:bg-[#202020]"
                 >
                   <span>{item.label}</span>
                   {item.children && (
-                    <Image
-                      src={assets.chevronRight}
-                      alt=""
-                      width={10}
-                      height={10}
-                      className="opacity-80"
-                    />
+                    <ChevronRightIcon className="opacity-80" />
                   )}
-                </div>
+                </button>
               )}
 
               {showSubmenu &&
@@ -95,12 +109,15 @@ export function MainNavigation() {
           </span>
           <div className="flex flex-col gap-1.5 pt-1">
             {channelLinks.map((link) => (
-              <span
-                key={link}
-                className="font-mono text-[9px] uppercase tracking-[-0.18px] text-white"
+              <a
+                key={link.label}
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-mono text-[9px] uppercase tracking-[-0.18px] text-white transition-colors hover:text-[#f5e642]"
               >
-                {link}
-              </span>
+                {link.label}
+              </a>
             ))}
           </div>
         </div>

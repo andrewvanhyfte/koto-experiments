@@ -10,6 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { isHomeFlow, routes } from "@/lib/routes";
 
 export type NavBarMode = "exposed" | "collapsed";
 export type CardState = "rest" | "hover" | "expand" | "move" | "minimize";
@@ -23,7 +24,8 @@ type OverlayContextValue = {
   activeCardId: string | null;
   cardStates: Record<string, CardState>;
   breadcrumb: string;
-  openMainNav: () => void;
+  highlightedNavItem: string | null;
+  openMainNav: (highlight?: string) => void;
   closeMainNav: () => void;
   toggleMainNav: () => void;
   openWidget: () => void;
@@ -31,6 +33,8 @@ type OverlayContextValue = {
   toggleWidget: () => void;
   toggleFilter: () => void;
   closeAllOverlays: () => void;
+  goHome: () => void;
+  openNavFromExposed: (highlight?: string) => void;
   setZoomLevel: (level: number) => void;
   setActiveCard: (id: string | null) => void;
   setCardState: (id: string, state: CardState) => void;
@@ -40,19 +44,39 @@ type OverlayContextValue = {
 const OverlayContext = createContext<OverlayContextValue | null>(null);
 
 function getRouteDefaults(pathname: string) {
-  if (pathname === "/") {
-    return { navBarMode: "exposed" as const, widgetOpen: false, breadcrumb: "home" };
+  if (pathname === routes.home) {
+    return {
+      navBarMode: "exposed" as const,
+      widgetOpen: false,
+      breadcrumb: "home",
+    };
   }
-  if (pathname === "/default") {
-    return { navBarMode: "collapsed" as const, widgetOpen: false, breadcrumb: "home" };
+  if (pathname === routes.navigation) {
+    return {
+      navBarMode: "collapsed" as const,
+      widgetOpen: false,
+      breadcrumb: "home",
+    };
   }
-  if (pathname === "/Navigation") {
-    return { navBarMode: "collapsed" as const, widgetOpen: true, breadcrumb: "home" };
+  if (pathname === routes.widget) {
+    return {
+      navBarMode: "collapsed" as const,
+      widgetOpen: true,
+      breadcrumb: "home",
+    };
   }
-  if (pathname === "/play") {
-    return { navBarMode: "collapsed" as const, widgetOpen: false, breadcrumb: "play" };
+  if (pathname === routes.play) {
+    return {
+      navBarMode: "collapsed" as const,
+      widgetOpen: false,
+      breadcrumb: "play",
+    };
   }
-  return { navBarMode: "collapsed" as const, widgetOpen: false, breadcrumb: "home" };
+  return {
+    navBarMode: "collapsed" as const,
+    widgetOpen: false,
+    breadcrumb: "home",
+  };
 }
 
 export function OverlayProvider({ children }: { children: ReactNode }) {
@@ -66,37 +90,128 @@ export function OverlayProvider({ children }: { children: ReactNode }) {
   const [zoomLevel, setZoomLevel] = useState(1);
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
   const [cardStates, setCardStates] = useState<Record<string, CardState>>({});
+  const [highlightedNavItem, setHighlightedNavItem] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     const defaults = getRouteDefaults(pathname);
     setWidgetOpen(defaults.widgetOpen);
     setMainNavOpen(false);
     setFilterOpen(false);
+    setHighlightedNavItem(null);
   }, [pathname]);
 
   const closeAllOverlays = useCallback(() => {
     setMainNavOpen(false);
-    setWidgetOpen(false);
     setFilterOpen(false);
-  }, []);
+    setHighlightedNavItem(null);
+    if (pathname === routes.widget) {
+      router.push(routes.navigation);
+    } else {
+      setWidgetOpen(false);
+    }
+  }, [pathname, router]);
 
   const navigate = useCallback(
     (href: string) => {
-      closeAllOverlays();
+      setMainNavOpen(false);
+      setFilterOpen(false);
+      setHighlightedNavItem(null);
       router.push(href);
     },
-    [closeAllOverlays, router],
+    [router],
   );
+
+  const goHome = useCallback(() => {
+    navigate(routes.home);
+  }, [navigate]);
+
+  const openMainNav = useCallback(
+    (highlight?: string) => {
+      if (pathname === routes.home) {
+        router.push(routes.navigation);
+      }
+      setMainNavOpen(true);
+      setHighlightedNavItem(highlight ?? null);
+    },
+    [pathname, router],
+  );
+
+  const openNavFromExposed = useCallback(
+    (highlight?: string) => {
+      setMainNavOpen(true);
+      setHighlightedNavItem(highlight ?? null);
+      if (pathname === routes.home) {
+        router.push(routes.navigation);
+      }
+    },
+    [pathname, router],
+  );
+
+  const closeMainNav = useCallback(() => {
+    setMainNavOpen(false);
+    setHighlightedNavItem(null);
+  }, []);
+
+  const toggleMainNav = useCallback(() => {
+    if (mainNavOpen) {
+      closeMainNav();
+    } else {
+      openMainNav();
+    }
+  }, [closeMainNav, mainNavOpen, openMainNav]);
+
+  const openWidget = useCallback(() => {
+    if (isHomeFlow(pathname)) {
+      router.push(routes.widget);
+    } else {
+      setWidgetOpen(true);
+    }
+  }, [pathname, router]);
+
+  const closeWidget = useCallback(() => {
+    if (pathname === routes.widget) {
+      router.push(routes.navigation);
+    } else {
+      setWidgetOpen(false);
+    }
+  }, [pathname, router]);
+
+  const toggleWidget = useCallback(() => {
+    if (widgetOpen || pathname === routes.widget) {
+      closeWidget();
+    } else {
+      openWidget();
+    }
+  }, [closeWidget, openWidget, pathname, widgetOpen]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        closeAllOverlays();
+        if (mainNavOpen) {
+          closeMainNav();
+          return;
+        }
+        if (widgetOpen || pathname === routes.widget) {
+          closeWidget();
+          return;
+        }
+        if (filterOpen) {
+          setFilterOpen(false);
+        }
       }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [closeAllOverlays]);
+  }, [
+    closeMainNav,
+    closeWidget,
+    filterOpen,
+    mainNavOpen,
+    pathname,
+    widgetOpen,
+  ]);
 
   const setCardState = useCallback((id: string, state: CardState) => {
     setCardStates((prev) => ({ ...prev, [id]: state }));
@@ -112,14 +227,17 @@ export function OverlayProvider({ children }: { children: ReactNode }) {
       activeCardId,
       cardStates,
       breadcrumb: routeDefaults.breadcrumb,
-      openMainNav: () => setMainNavOpen(true),
-      closeMainNav: () => setMainNavOpen(false),
-      toggleMainNav: () => setMainNavOpen((open) => !open),
-      openWidget: () => setWidgetOpen(true),
-      closeWidget: () => setWidgetOpen(false),
-      toggleWidget: () => setWidgetOpen((open) => !open),
+      highlightedNavItem,
+      openMainNav,
+      closeMainNav,
+      toggleMainNav,
+      openWidget,
+      closeWidget,
+      toggleWidget,
       toggleFilter: () => setFilterOpen((open) => !open),
       closeAllOverlays,
+      goHome,
+      openNavFromExposed,
       setZoomLevel,
       setActiveCard: setActiveCardId,
       setCardState,
@@ -133,7 +251,16 @@ export function OverlayProvider({ children }: { children: ReactNode }) {
       zoomLevel,
       activeCardId,
       cardStates,
+      highlightedNavItem,
+      openMainNav,
+      closeMainNav,
+      toggleMainNav,
+      openWidget,
+      closeWidget,
+      toggleWidget,
       closeAllOverlays,
+      goHome,
+      openNavFromExposed,
       navigate,
       setCardState,
     ],

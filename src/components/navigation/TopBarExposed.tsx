@@ -3,13 +3,21 @@
 import Image from "next/image";
 import { assets } from "@/lib/assets";
 import { exposedNavLinks } from "@/lib/nav-items";
+import { useOverlay } from "@/context/OverlayContext";
 import { DashboardClock } from "./DashboardClock";
 
 export function TopBarExposed() {
+  const { openNavFromExposed, goHome } = useOverlay();
+
   return (
     <>
       <header className="absolute left-4 top-4 z-40 flex h-12 items-center gap-9 pr-4">
-        <div className="relative h-full w-20 shrink-0">
+        <button
+          type="button"
+          onClick={goHome}
+          className="relative block h-full w-20 shrink-0 transition-opacity hover:opacity-80"
+          aria-label="Koto home"
+        >
           <Image
             src={assets.kotoLogoSmile}
             alt="Koto"
@@ -17,19 +25,25 @@ export function TopBarExposed() {
             className="object-contain"
             priority
           />
-        </div>
+        </button>
         <nav className="flex h-2 items-center gap-9 mix-blend-color-dodge">
           {exposedNavLinks.map((link) => (
-            <span
-              key={link}
-              className="font-mono text-[11px] uppercase leading-none text-white/50"
+            <button
+              key={link.label}
+              type="button"
+              onClick={() =>
+                openNavFromExposed(
+                  link.label === "Work" ? "Work" : link.label,
+                )
+              }
+              className="font-mono text-[11px] uppercase leading-none text-white/50 transition-colors hover:text-white"
             >
-              {link}
-            </span>
+              {link.label}
+            </button>
           ))}
         </nav>
       </header>
-      <div className="absolute right-0 top-4 z-40">
+      <div className="absolute right-4 top-4 z-40">
         <DashboardClock />
       </div>
     </>

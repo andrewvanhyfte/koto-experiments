@@ -83,11 +83,11 @@ export const playCards: PlayCardData[] = [
   {
     id: "nook",
     title: "Nook",
-    subtitle: "Spatial Design Experimentation",
+    subtitle: "Website Interaction",
     author: "LUCY SI, KOTO LA",
     category: "Image Gen",
     tools: "Midjourney",
-    image: assets.playCard2,
+    image: assets.playCard5,
     x: 300,
     y: 480,
     width: 260,
