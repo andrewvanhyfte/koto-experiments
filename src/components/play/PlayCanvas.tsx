@@ -14,6 +14,7 @@ import { SidePanel } from "./SidePanel";
 import { FilterBar } from "./FilterBar";
 import { ZoomControls } from "./ZoomControls";
 import { RadarMinimap } from "./RadarMinimap";
+import { DismissIcon } from "@/components/ui/Icons";
 
 function getTouchDistance(touches: TouchList) {
   const dx = touches[0].clientX - touches[1].clientX;
@@ -350,14 +351,21 @@ export function PlayCanvas() {
 
   return (
     <div
-      className={`relative h-screen w-full overflow-hidden transition-all duration-500 ${
+      className={`relative flex h-screen w-full overflow-hidden transition-all duration-500 ${
         widgetOpen ? "scale-[0.98]" : ""
       }`}
     >
+      {/*
+        Figma 482:4359 — yellow canvas 574px + black panel 938px (1512 artboard).
+        Canvas flexes to fill remaining width so the page black never gaps
+        between the two regions.
+      */}
       <div
         ref={viewportRef}
-        className={`relative h-full touch-none select-none transition-[width] duration-500 ${
-          sidePanelOpen ? "w-[38%]" : "w-full"
+        className={`relative h-full min-w-0 touch-none select-none transition-[flex-basis,width] duration-500 ${
+          sidePanelOpen
+            ? "flex-1 bg-[var(--color-yellow)]"
+            : "w-full flex-none"
         } ${isPanning ? "cursor-grabbing" : "cursor-grab"}`}
         onPointerDown={handleViewportPointerDown}
         onPointerMove={handleViewportPointerMove}
@@ -413,9 +421,24 @@ export function PlayCanvas() {
 
         {sidePanelOpen ? (
           <div
-            className="pointer-events-none absolute inset-0 z-40 bg-black/25"
+            className="pointer-events-none absolute inset-0 z-40 bg-black/20"
             aria-hidden
           />
+        ) : null}
+
+        {/*
+          Figma 482:5559 — 44×44 close on the yellow strip (not in the panel
+          header). Anchored here so parent overflow doesn't clip it.
+        */}
+        {sidePanelOpen ? (
+          <button
+            type="button"
+            aria-label="Close side panel"
+            className="absolute top-4 right-[18px] z-50 flex size-11 items-center justify-center rounded bg-[var(--color-black)] text-white backdrop-blur-[40px] transition-opacity hover:opacity-80"
+            onClick={handleCloseSidePanel}
+          >
+            <DismissIcon />
+          </button>
         ) : null}
       </div>
 
@@ -424,8 +447,8 @@ export function PlayCanvas() {
       ) : null}
 
       {!sidePanelOpen ? <FilterBar /> : null}
-      <RadarMinimap />
-      <ZoomControls />
+      {!sidePanelOpen ? <RadarMinimap /> : null}
+      {!sidePanelOpen ? <ZoomControls /> : null}
     </div>
   );
 }

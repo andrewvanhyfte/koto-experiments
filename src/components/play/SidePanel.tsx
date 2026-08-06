@@ -2,11 +2,11 @@
 
 import Image from "next/image";
 import { getCardDeepDive, type PlayCardData } from "@/lib/play-cards";
-import { CloseIcon } from "@/components/ui/Icons";
 import { MediaControls } from "./MediaControls";
 
 type SidePanelProps = {
   card: PlayCardData;
+  /** Kept for callers; close control lives on the yellow canvas strip. */
   onClose: () => void;
 };
 
@@ -14,23 +14,18 @@ function isAnimatedSrc(src: string) {
   return /\.gif($|\?)/i.test(src);
 }
 
-export function SidePanel({ card, onClose }: SidePanelProps) {
+/** Figma Panel / Desktop — 938×850 on a 1512 artboard (≈62%). */
+const PANEL_MAX_WIDTH_PX = 938;
+
+export function SidePanel({ card }: SidePanelProps) {
   const deepDive = getCardDeepDive(card);
 
   return (
     <aside
-      className="absolute inset-y-0 right-0 z-50 flex w-[min(938px,62%)] flex-col bg-[var(--color-black)]"
+      className="relative z-50 flex h-full w-[min(938px,62%)] shrink-0 flex-col bg-[var(--color-black)]"
+      style={{ maxWidth: PANEL_MAX_WIDTH_PX }}
       aria-label={`${card.title} deep dive`}
     >
-      <button
-        type="button"
-        aria-label="Close side panel"
-        className="absolute top-4 right-full z-50 mr-4 flex size-11 items-center justify-center rounded-[2px] bg-[var(--color-black)] text-white transition-opacity hover:opacity-80"
-        onClick={onClose}
-      >
-        <CloseIcon className="size-2.5" />
-      </button>
-
       <div className="flex min-h-0 flex-1 flex-col gap-[120px] overflow-y-auto px-7 py-6">
         <header className="flex w-full shrink-0 items-center justify-between gap-4 whitespace-nowrap">
           <p className="text-overline-large shrink-0 text-white">
@@ -50,7 +45,7 @@ export function SidePanel({ card, onClose }: SidePanelProps) {
           </div>
 
           <div className="relative w-full overflow-hidden rounded-md">
-            <div className="relative aspect-[1144/642] w-full">
+            <div className="relative aspect-[882/495] w-full">
               <Image
                 src={deepDive.heroImage}
                 alt=""

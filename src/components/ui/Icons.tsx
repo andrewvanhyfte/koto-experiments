@@ -176,6 +176,23 @@ export function MinusIcon({ className = "size-2.5" }: IconProps) {
   );
 }
 
+/** Figma Input/Button dismiss — diagonal X (side-panel close on yellow strip). */
+export function DismissIcon({ className = "size-2.5" }: IconProps) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 10 10"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.2"
+      aria-hidden
+    >
+      <line x1="2" y1="2" x2="8" y2="8" />
+      <line x1="8" y1="2" x2="2" y2="8" />
+    </svg>
+  );
+}
+
 export function ExternalLinkIcon({ className = "size-2.5" }: IconProps) {
   return (
     <svg
