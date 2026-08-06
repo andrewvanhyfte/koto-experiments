@@ -41,7 +41,6 @@ export function PlayCanvas() {
     cardStates,
     setActiveCard,
     setCardState,
-    widgetOpen,
   } = useOverlay();
 
   const [positions, setPositions] = useState(
@@ -350,11 +349,7 @@ export function PlayCanvas() {
   const gridStyle = getInfiniteGridStyle(zoomLevel, panOffset);
 
   return (
-    <div
-      className={`relative flex h-screen w-full overflow-hidden transition-all duration-500 ${
-        widgetOpen ? "scale-[0.98]" : ""
-      }`}
-    >
+    <div className="relative flex h-screen w-full overflow-hidden">
       {/*
         Figma 482:4359 — yellow canvas 574px + black panel 938px (1512 artboard).
         Canvas flexes to fill remaining width so the page black never gaps
