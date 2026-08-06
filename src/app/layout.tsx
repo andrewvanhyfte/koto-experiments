@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { OverlayProvider } from "@/context/OverlayContext";
 import { AppShell } from "@/components/layout/AppShell";
 import { kotoheim, kotoheimMono } from "@/lib/fonts";
@@ -23,6 +24,7 @@ export default function RootLayout({
         <OverlayProvider>
           <AppShell>{children}</AppShell>
         </OverlayProvider>
+        <Analytics />
       </body>
     </html>
   );
