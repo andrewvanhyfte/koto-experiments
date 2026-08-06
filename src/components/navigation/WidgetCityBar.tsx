@@ -15,7 +15,7 @@ export function WidgetCityBar({
   onClose,
 }: WidgetCityBarProps) {
   return (
-    <div className="flex h-12 w-[370px] items-center justify-between rounded-md rounded-tr-sm bg-white/5 p-1 backdrop-blur-[9.6px]">
+    <div className="flex h-12 w-[370px] items-center justify-between rounded-md rounded-tr-sm bg-[#1c1c1c]/95 p-1">
       <div className="flex h-full min-w-0 flex-1 items-center justify-between">
         {widgetCities.map((city) => {
           const isActive = activeCity === city;

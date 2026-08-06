@@ -22,7 +22,9 @@ export function Backdrop() {
       aria-label="Close overlay"
       className={`fixed inset-0 z-40 ${
         widgetOpen
-          ? "bg-black/50 backdrop-blur-[20px]"
+          ? // Solid dim only — backdrop-filter freezes animated GIFs/videos
+            // in Chromium while the widget menu is open.
+            "bg-black/60"
           : "bg-black/40 backdrop-blur-sm"
       }`}
       onClick={handleClick}

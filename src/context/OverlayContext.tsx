@@ -13,7 +13,14 @@ import { usePathname, useRouter } from "next/navigation";
 import { isHomeFlow, routes } from "@/lib/routes";
 
 export type NavBarMode = "exposed" | "collapsed";
-export type CardState = "rest" | "hover" | "expand" | "move" | "minimize";
+export type CardState =
+  | "rest"
+  | "hover"
+  | "expand"
+  | "move"
+  | "minimize"
+  | "side-panel";
+export type PanOffset = { x: number; y: number };
 
 type OverlayContextValue = {
   navBarMode: NavBarMode;
@@ -21,6 +28,7 @@ type OverlayContextValue = {
   widgetOpen: boolean;
   filterOpen: boolean;
   zoomLevel: number;
+  panOffset: PanOffset;
   activeCardId: string | null;
   cardStates: Record<string, CardState>;
   breadcrumb: string;
@@ -36,6 +44,8 @@ type OverlayContextValue = {
   goHome: () => void;
   openNavFromExposed: (highlight?: string) => void;
   setZoomLevel: (level: number) => void;
+  setPanOffset: (offset: PanOffset) => void;
+  resetView: () => void;
   setActiveCard: (id: string | null) => void;
   setCardState: (id: string, state: CardState) => void;
   navigate: (href: string) => void;
@@ -88,6 +98,7 @@ export function OverlayProvider({ children }: { children: ReactNode }) {
   const [widgetOpen, setWidgetOpen] = useState(routeDefaults.widgetOpen);
   const [filterOpen, setFilterOpen] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
+  const [panOffset, setPanOffset] = useState<PanOffset>({ x: 0, y: 0 });
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
   const [cardStates, setCardStates] = useState<Record<string, CardState>>({});
   const [highlightedNavItem, setHighlightedNavItem] = useState<string | null>(
@@ -188,23 +199,33 @@ export function OverlayProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        if (mainNavOpen) {
-          closeMainNav();
-          return;
-        }
-        if (widgetOpen || pathname === routes.widget) {
-          closeWidget();
-          return;
-        }
-        if (filterOpen) {
-          setFilterOpen(false);
-        }
+      if (event.key !== "Escape") return;
+
+      if (mainNavOpen) {
+        closeMainNav();
+        return;
+      }
+      if (widgetOpen || pathname === routes.widget) {
+        closeWidget();
+        return;
+      }
+      if (filterOpen) {
+        setFilterOpen(false);
+        return;
+      }
+
+      const sidePanelId = Object.entries(cardStates).find(
+        ([, state]) => state === "side-panel",
+      )?.[0];
+      if (sidePanelId) {
+        setCardStates((prev) => ({ ...prev, [sidePanelId]: "minimize" }));
+        setActiveCardId(null);
       }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [
+    cardStates,
     closeMainNav,
     closeWidget,
     filterOpen,
@@ -214,7 +235,29 @@ export function OverlayProvider({ children }: { children: ReactNode }) {
   ]);
 
   const setCardState = useCallback((id: string, state: CardState) => {
-    setCardStates((prev) => ({ ...prev, [id]: state }));
+    setCardStates((prev) => {
+      const next: Record<string, CardState> = { ...prev, [id]: state };
+
+      // One advanced preview / deep dive at a time across the canvas.
+      if (state === "expand" || state === "side-panel") {
+        for (const key of Object.keys(next)) {
+          if (key === id) continue;
+          if (next[key] === "expand") {
+            next[key] = "rest";
+          }
+          if (state === "side-panel" && next[key] === "side-panel") {
+            next[key] = "minimize";
+          }
+        }
+      }
+
+      return next;
+    });
+  }, []);
+
+  const resetView = useCallback(() => {
+    setZoomLevel(1);
+    setPanOffset({ x: 0, y: 0 });
   }, []);
 
   const value = useMemo<OverlayContextValue>(
@@ -224,6 +267,7 @@ export function OverlayProvider({ children }: { children: ReactNode }) {
       widgetOpen,
       filterOpen,
       zoomLevel,
+      panOffset,
       activeCardId,
       cardStates,
       breadcrumb: routeDefaults.breadcrumb,
@@ -239,6 +283,8 @@ export function OverlayProvider({ children }: { children: ReactNode }) {
       goHome,
       openNavFromExposed,
       setZoomLevel,
+      setPanOffset,
+      resetView,
       setActiveCard: setActiveCardId,
       setCardState,
       navigate,
@@ -249,6 +295,7 @@ export function OverlayProvider({ children }: { children: ReactNode }) {
       widgetOpen,
       filterOpen,
       zoomLevel,
+      panOffset,
       activeCardId,
       cardStates,
       highlightedNavItem,
@@ -261,6 +308,7 @@ export function OverlayProvider({ children }: { children: ReactNode }) {
       closeAllOverlays,
       goHome,
       openNavFromExposed,
+      resetView,
       navigate,
       setCardState,
     ],

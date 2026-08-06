@@ -4,19 +4,18 @@ import { usePathname } from "next/navigation";
 import { assets } from "@/lib/assets";
 import { routes } from "@/lib/routes";
 import { useOverlay } from "@/context/OverlayContext";
+import { MenuIcon } from "@/components/ui/Icons";
 import { DashboardClock } from "./DashboardClock";
 
+/**
+ * Compact top bar — source of truth:
+ * https://www.figma.com/design/3MwgfLh2C4gAdYQTElQ6NC/koto.com?node-id=3319-1275
+ * (Compact / Hover variants)
+ */
 function NavLogo({ src, className }: { src: string; className: string }) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img src={src} alt="Koto" className={className} />
-  );
-}
-
-function NavIcon({ src }: { src: string }) {
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img src={src} alt="" className="size-2.5" />
   );
 }
 
@@ -33,48 +32,14 @@ export function TopBarCollapsed() {
     );
   }
 
-  if (isPlay) {
-    return (
-      <>
-        <header className="absolute left-4 top-4 z-40">
-          <div className="flex h-10 items-center gap-6 rounded-md bg-[#181818] py-1.5 pl-3 pr-3">
-            <div className="flex items-center gap-6">
-              <button
-                type="button"
-                onClick={goHome}
-                className="flex h-8 w-9 shrink-0 items-center justify-center transition-opacity hover:opacity-80"
-                aria-label="Koto home"
-              >
-                <NavLogo
-                  src={assets.kotoLogoPlay}
-                  className="h-3.5 w-[29px] object-contain"
-                />
-              </button>
-              <span className="font-mono text-[10px] uppercase leading-[1.1] tracking-[0.3px] text-[#919191]">
-                {breadcrumb}
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={() => openMainNav()}
-              aria-label="Open navigation"
-              className="flex size-6 shrink-0 items-center justify-center rounded-sm transition-colors hover:bg-white/5"
-            >
-              <NavIcon src={assets.navExpandIcon} />
-            </button>
-          </div>
-        </header>
-        <div className="absolute right-4 top-4 z-40">
-          <DashboardClock />
-        </div>
-      </>
-    );
-  }
-
   return (
     <>
       <header className="absolute left-4 top-4 z-40">
-        <div className="flex w-[195px] items-center gap-6 rounded bg-[#141414] py-1.5 pl-3 pr-2">
+        <div
+          className={`flex items-center justify-between rounded bg-[var(--color-off-black)] py-1.5 pl-3 pr-2 ${
+            isPlay ? "min-w-0 gap-6" : "w-[320px]"
+          }`}
+        >
           <div className="flex min-w-0 flex-1 items-center gap-6">
             <button
               type="button"
@@ -83,17 +48,21 @@ export function TopBarCollapsed() {
               aria-label="Koto home"
             >
               <NavLogo
-                src={assets.kotoLogoHome}
-                className="h-5 w-[42px] object-contain"
+                src={isPlay ? assets.kotoLogoPlay : assets.kotoLogoHome}
+                className={
+                  isPlay
+                    ? "h-3.5 w-[29px] object-contain"
+                    : "h-5 w-[42px] object-contain"
+                }
               />
             </button>
             <button
               type="button"
               onClick={() => openMainNav()}
               aria-label="Open navigation"
-              className="rounded-sm py-0.5 transition-colors hover:opacity-80"
+              className="rounded-sm py-0.5 transition-opacity hover:opacity-80"
             >
-              <span className="font-mono text-[11px] uppercase leading-none text-[#989898]">
+              <span className="text-overline-large text-[var(--color-grey)]">
                 {breadcrumb}
               </span>
             </button>
@@ -102,9 +71,9 @@ export function TopBarCollapsed() {
             type="button"
             onClick={() => openMainNav()}
             aria-label="Open navigation menu"
-            className="flex size-6 shrink-0 items-center justify-center rounded-sm transition-colors hover:bg-white/5"
+            className="relative flex size-6 shrink-0 items-center justify-center rounded-[2px] text-[var(--color-grey)] transition-colors hover:bg-white/5 hover:text-white"
           >
-            <NavIcon src={assets.navMenuIcon} />
+            <MenuIcon className="size-2.5" />
           </button>
         </div>
       </header>

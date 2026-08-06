@@ -33,10 +33,12 @@ export function TopBarExposed() {
               type="button"
               onClick={() =>
                 openNavFromExposed(
-                  link.label === "Work" ? "Work" : link.label,
+                  "highlightsWork" in link && link.highlightsWork
+                    ? "Work"
+                    : link.label,
                 )
               }
-              className="font-mono text-[11px] uppercase leading-none text-white/50 transition-colors hover:text-white"
+              className="text-overline-large text-white/50 transition-colors hover:text-white"
             >
               {link.label}
             </button>

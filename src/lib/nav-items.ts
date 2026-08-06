@@ -3,6 +3,11 @@ import { routes } from "./routes";
 export type NavItem = {
   label: string;
   href?: string;
+  /** Shown on hover instead of label (e.g. Careers → Join the team) */
+  hoverLabel?: string;
+  /** Trailing active/section indicator (dot) */
+  showIndicator?: boolean;
+  /** Work focus replaces Play with this submenu item */
   children?: { label: string; href: string }[];
 };
 
@@ -11,19 +16,33 @@ export const mainNavItems: NavItem[] = [
     label: "Work",
     children: [{ label: "See our experiments", href: routes.play }],
   },
-  { label: "Play", href: routes.play },
+  { label: "Play", href: routes.play, showIndicator: true },
   { label: "About", href: routes.navigation },
-  { label: "Services", href: routes.navigation },
+  {
+    label: "Careers",
+    href: routes.navigation,
+    hoverLabel: "Join the team",
+  },
   { label: "Latest", href: routes.navigation },
-  { label: "Careers", href: routes.navigation },
   { label: "Contact", href: routes.navigation },
 ];
 
 export const channelLinks = [
-  { label: "Instagram", href: "https://www.instagram.com/koto" },
-  { label: "Off.Live", href: "https://off.live" },
-  { label: "Off.Brand", href: "https://offbrand.com" },
-  { label: "SEASONED", href: "https://seasoned.koto.com" },
+  {
+    label: "Instagram",
+    href: "https://www.instagram.com/koto",
+    preview: null,
+  },
+  {
+    label: "Off.Live",
+    href: "https://off.live",
+    preview: null,
+  },
+  {
+    label: "Off.Brand",
+    href: "https://offbrand.com",
+    preview: "/widgets/channel-preview-off.png",
+  },
 ] as const;
 
 export const exposedNavLinks = [

@@ -13,7 +13,7 @@ export function InteractiveExperimentWidget() {
     <button
       type="button"
       onClick={() => navigate(routes.play)}
-      className="group flex h-[197px] w-full flex-col overflow-hidden rounded-md bg-[#ffe800] p-1 text-left transition-opacity hover:opacity-95"
+      className="group flex h-[197px] w-full flex-col overflow-hidden rounded-md bg-[#ffe800] p-1 text-left"
       aria-label="Open experiments.koto.com/la"
     >
       <div className="relative flex shrink-0 items-center justify-between py-2 pl-2 pr-0">
@@ -30,10 +30,12 @@ export function InteractiveExperimentWidget() {
           src={assets.widgetPlasmaRally}
           alt="Interactive experiment — rally car"
           fill
+          unoptimized
+          draggable={false}
           className="object-cover"
           sizes="274px"
         />
-        <div className="absolute right-2 top-2 flex items-center gap-1.5 rounded-full bg-white/5 py-2 pl-3 pr-2 backdrop-blur-[40px]">
+        <div className="absolute right-2 top-2 flex items-center gap-1.5 rounded-full bg-black/35 py-2 pl-3 pr-2">
           <span className="font-mono text-[11px] uppercase leading-none text-white">
             Interactive
           </span>

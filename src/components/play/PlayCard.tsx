@@ -3,34 +3,61 @@
 import Image from "next/image";
 import type { PlayCardData } from "@/lib/play-cards";
 import type { CardState } from "@/context/OverlayContext";
-import { MinusIcon, PlusIcon } from "@/components/ui/Icons";
+import {
+  ChevronRightIcon,
+  MinusIcon,
+  PlusIcon,
+} from "@/components/ui/Icons";
+import { MediaControls } from "./MediaControls";
+
+export const DEFAULT_CARD_WIDTH = 464;
+export const DEFAULT_CARD_HEIGHT = 540;
+export const MINIMIZED_CARD_WIDTH = 464;
+export const MINIMIZED_CARD_HEIGHT = 122;
 
 type PlayCardProps = {
   card: PlayCardData;
   state: CardState;
   isActive: boolean;
-  zoom: number;
+  isDragging?: boolean;
+  /** When side-panel is open, all canvas cards render minimized. */
+  forceMinimized?: boolean;
   onHover: () => void;
   onLeave: () => void;
   onClick: () => void;
+  onMinimize: () => void;
+  onOpenSidePanel: () => void;
   onDragStart: (event: React.PointerEvent) => void;
+  onPointerUp?: (event: React.PointerEvent) => void;
 };
 
-function CardPlusButton({
+function cardThumb(card: PlayCardData) {
+  return card.thumbImage ?? card.image;
+}
+
+function isAnimatedSrc(src: string) {
+  return /\.gif($|\?)/i.test(src);
+}
+
+/** Shared − / + control used in expand header and minimized row. */
+function CardIconButton({
   onClick,
-  className = "",
+  label,
+  children,
 }: {
   onClick: (event: React.MouseEvent) => void;
-  className?: string;
+  label: string;
+  children: React.ReactNode;
 }) {
   return (
     <button
       type="button"
-      aria-label="Expand card"
-      className={`flex size-[26px] shrink-0 items-center justify-center rounded-sm text-white/60 backdrop-blur-[40px] transition-colors hover:bg-white/10 hover:text-white ${className}`}
+      aria-label={label}
+      className="flex size-[26px] shrink-0 items-center justify-center rounded-[2px] p-2 text-white/50 backdrop-blur-[40px] mix-blend-exclusion transition-colors hover:text-white"
+      onPointerDown={(event) => event.stopPropagation()}
       onClick={onClick}
     >
-      <PlusIcon />
+      {children}
     </button>
   );
 }
@@ -38,29 +65,10 @@ function CardPlusButton({
 function CardHeading({ card }: { card: PlayCardData }) {
   return (
     <div className="flex min-w-0 items-center gap-2.5 whitespace-nowrap">
-      <p className="shrink-0 font-mono text-[11px] uppercase leading-none text-white">
-        {card.category}
-      </p>
-      <p className="truncate text-[15px] leading-[1.25] text-[#989898]">
+      <p className="text-overline-large shrink-0 text-white">{card.category}</p>
+      <p className="text-body-small truncate text-[var(--color-grey)]">
         {card.tools}
       </p>
-    </div>
-  );
-}
-
-function CardHeaderRow({
-  card,
-  onPlusClick,
-}: {
-  card: PlayCardData;
-  onPlusClick: (event: React.MouseEvent) => void;
-}) {
-  return (
-    <div className="flex shrink-0 items-center gap-2">
-      <div className="min-w-0 flex-1">
-        <CardHeading card={card} />
-      </div>
-      <CardPlusButton onClick={onPlusClick} />
     </div>
   );
 }
@@ -76,11 +84,11 @@ function CardCopy({
     <div
       className={`flex min-w-0 flex-1 flex-col justify-between pb-1 pr-2 pt-1 ${className}`}
     >
-      <div className="min-w-0 text-[15px] leading-[1.25]">
+      <div className="text-body-small min-w-0">
         <p className="truncate text-white">{card.title}</p>
-        <p className="truncate text-[#989898]">{card.subtitle}</p>
+        <p className="truncate text-[var(--color-grey)]">{card.subtitle}</p>
       </div>
-      <p className="font-mono text-[9px] uppercase leading-none tracking-[-0.18px] text-[#989898]">
+      <p className="text-overline-small text-[var(--color-grey)]">
         {card.author}
       </p>
     </div>
@@ -89,14 +97,116 @@ function CardCopy({
 
 function CardImage({ src }: { src: string }) {
   return (
-    <div className="relative min-h-0 flex-1 overflow-hidden rounded-md bg-gradient-to-b from-[rgba(6,6,6,0.3)] to-[#060606]">
+    <div className="relative min-h-0 w-full flex-1 overflow-hidden rounded-md bg-gradient-to-b from-[rgba(6,6,6,0.3)] to-[#060606]">
       <Image
         src={src}
         alt=""
         fill
         className="object-cover"
         draggable={false}
+        sizes="464px"
+        unoptimized={isAnimatedSrc(src)}
       />
+      <MediaControls />
+    </div>
+  );
+}
+
+function CardFooter({
+  card,
+  onOpenSidePanel,
+}: {
+  card: PlayCardData;
+  onOpenSidePanel: () => void;
+}) {
+  return (
+    <div className="relative w-full shrink-0 rounded-md bg-[var(--color-off-black)]">
+      <button
+        type="button"
+        aria-label={`Explore ${card.title}`}
+        className="group flex w-full items-center gap-3 rounded-[8px] p-1.5 text-left transition-colors hover:bg-white/[0.04]"
+        onPointerDown={(event) => event.stopPropagation()}
+        onClick={(event) => {
+          event.stopPropagation();
+          onOpenSidePanel();
+        }}
+      >
+        <div className="relative size-16 shrink-0 overflow-hidden rounded-[2px]">
+          <Image
+            src={cardThumb(card)}
+            alt=""
+            fill
+            className="object-cover"
+            draggable={false}
+            sizes="64px"
+            unoptimized={isAnimatedSrc(cardThumb(card))}
+          />
+        </div>
+        <CardCopy card={card} className="h-16" />
+        <span className="text-overline-large flex shrink-0 items-center gap-1.5 text-white/50 transition-colors group-hover:text-white">
+          Explore
+          <ChevronRightIcon className="size-2.5 transition-transform group-hover:translate-x-0.5" />
+        </span>
+      </button>
+    </div>
+  );
+}
+
+/** rest | hover | minimize | side-panel (forced) — compact row */
+function MinimizedCardContent({
+  card,
+  onRestore,
+  showExpandControl,
+}: {
+  card: PlayCardData;
+  onRestore: (event: React.MouseEvent) => void;
+  showExpandControl: boolean;
+}) {
+  return (
+    <div className="flex h-full items-center gap-4 py-4 pl-4 pr-4">
+      <div className="relative size-[90px] shrink-0 overflow-hidden rounded-md bg-gradient-to-b from-[rgba(6,6,6,0.3)] to-[#060606]">
+        <Image
+          src={cardThumb(card)}
+          alt=""
+          fill
+          className="object-cover"
+          draggable={false}
+          sizes="90px"
+          unoptimized={isAnimatedSrc(cardThumb(card))}
+        />
+      </div>
+      <CardCopy card={card} className="h-16" />
+      {showExpandControl ? (
+        <CardIconButton onClick={onRestore} label="Expand card">
+          <PlusIcon />
+        </CardIconButton>
+      ) : null}
+    </div>
+  );
+}
+
+/** expand — advanced preview; Explore → side-panel */
+function ExpandedCardContent({
+  card,
+  onMinimize,
+  onOpenSidePanel,
+}: {
+  card: PlayCardData;
+  onMinimize: (event: React.MouseEvent) => void;
+  onOpenSidePanel: () => void;
+}) {
+  return (
+    <div className="flex h-full flex-col gap-8 overflow-hidden py-4 pl-4 pr-4">
+      <div className="flex shrink-0 items-center gap-2">
+        <div className="min-w-0 flex-1">
+          <CardHeading card={card} />
+        </div>
+        <CardIconButton onClick={onMinimize} label="Minimize card">
+          <MinusIcon />
+        </CardIconButton>
+      </div>
+      <CardImage src={card.image} />
+      <CardFooter card={card} onOpenSidePanel={onOpenSidePanel} />
     </div>
   );
 }
@@ -105,117 +215,77 @@ export function PlayCard({
   card,
   state,
   isActive,
-  zoom,
+  isDragging = false,
+  forceMinimized = false,
   onHover,
   onLeave,
   onClick,
+  onMinimize,
+  onOpenSidePanel,
   onDragStart,
+  onPointerUp,
 }: PlayCardProps) {
-  const isExpanded = state === "expand";
-  const isMinimized = state === "minimize";
-  const isMoving = state === "move";
-  const isHovered = state === "hover";
-  const isRest = !isExpanded && !isMinimized;
+  const isExpandedPreview = !forceMinimized && state === "expand";
+  const showMinimized = !isExpandedPreview;
+  const isHovered = state === "hover" && !forceMinimized;
+  const isMinimizedFocus =
+    showMinimized && !forceMinimized && (isHovered || isActive);
 
-  const cardWidth = isExpanded
-    ? Math.max(card.width, 464) * zoom
-    : isMinimized
-      ? Math.max(card.width, 464) * zoom
-      : card.width * zoom;
+  const cardWidth = showMinimized ? MINIMIZED_CARD_WIDTH : DEFAULT_CARD_WIDTH;
+  const cardHeight = showMinimized ? MINIMIZED_CARD_HEIGHT : DEFAULT_CARD_HEIGHT;
 
-  const cardHeight = isExpanded
-    ? Math.max(card.height + 180, 420) * zoom
-    : isMinimized
-      ? 92 * zoom
-      : card.height * zoom;
-
-  const shadowClass = isMoving
+  const shadowClass = isDragging
     ? "shadow-[-5px_8px_16px_rgba(0,0,0,0.35)]"
-    : isExpanded
-      ? "shadow-[-7px_4px_6px_rgba(0,0,0,0.25)]"
-      : isMinimized
-        ? "shadow-[-5px_3px_7.3px_rgba(0,0,0,0.25)]"
-        : "shadow-[-7px_-4px_6px_rgba(0,0,0,0.25)]";
+    : showMinimized
+      ? "shadow-[-5px_3px_7.3px_rgba(0,0,0,0.25)]"
+      : "shadow-[-7px_-4px_6px_rgba(0,0,0,0.25)]";
 
-  const handlePlusClick = (event: React.MouseEvent) => {
+  const handleMinimizeClick = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    onMinimize();
+  };
+
+  const handleRestoreClick = (event: React.MouseEvent) => {
     event.stopPropagation();
     onClick();
   };
 
   return (
     <article
-      className={`absolute cursor-grab select-none overflow-hidden rounded bg-[#141414] transition-[opacity,box-shadow] duration-300 active:cursor-grabbing ${shadowClass} ${
-        isExpanded
+      className={`absolute cursor-grab select-none overflow-hidden rounded bg-[var(--color-off-black)] transition-[opacity,box-shadow,width,height] duration-300 active:cursor-grabbing ${shadowClass} ${
+        isExpandedPreview
           ? "z-30 ring-1 ring-white/20"
-          : isHovered
+          : isMinimizedFocus
             ? "z-20 ring-1 ring-white/10"
             : "z-10"
       }`}
       style={{
-        left: card.x * zoom,
-        top: card.y * zoom,
+        left: card.x,
+        top: card.y,
         width: cardWidth,
         height: cardHeight,
-        opacity: isMinimized ? 0.85 : 1,
       }}
       onMouseEnter={onHover}
       onMouseLeave={onLeave}
-      onClick={onClick}
       onPointerDown={onDragStart}
-      aria-expanded={isExpanded}
-      aria-label={isRest ? `${card.category} ${card.tools}` : card.title}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
+      aria-expanded={isExpandedPreview}
+      aria-label={card.title}
+      data-card-state={forceMinimized ? "side-panel-canvas" : state}
     >
-      {isMinimized ? (
-        <div className="relative flex h-full items-center gap-4 px-4 py-4 pr-9">
-          <div className="relative size-[90px] shrink-0 overflow-hidden rounded-md bg-gradient-to-b from-[rgba(6,6,6,0.3)] to-[#060606]">
-            <Image
-              src={card.image}
-              alt=""
-              fill
-              className="object-cover"
-              draggable={false}
-            />
-          </div>
-          <CardCopy card={card} className="h-16" />
-          <CardPlusButton
-            onClick={handlePlusClick}
-            className="absolute right-4 top-4"
-          />
-        </div>
-      ) : isExpanded ? (
-        <div className="flex h-full flex-col gap-8 py-4 pl-4 pr-9">
-          <CardHeaderRow card={card} onPlusClick={handlePlusClick} />
-          <CardImage src={card.image} />
-          <div className="relative shrink-0 rounded-md bg-[#141414] py-1.5 pl-1.5 pr-6">
-            <div className="flex items-center gap-3">
-              <div className="relative size-16 shrink-0 overflow-hidden rounded-sm">
-                <Image
-                  src={card.image}
-                  alt=""
-                  fill
-                  className="object-cover"
-                  draggable={false}
-                />
-              </div>
-              <CardCopy card={card} className="h-16" />
-            </div>
-            {isActive && (
-              <button
-                type="button"
-                aria-label="Minimize card"
-                className="absolute right-0 top-0 flex size-[26px] items-center justify-center text-white/50 transition-colors hover:text-white"
-                onClick={handlePlusClick}
-              >
-                <MinusIcon />
-              </button>
-            )}
-          </div>
-        </div>
+      {showMinimized ? (
+        <MinimizedCardContent
+          card={card}
+          onRestore={handleRestoreClick}
+          showExpandControl={!forceMinimized}
+        />
       ) : (
-        <div className="flex h-full flex-col gap-4 py-4 pl-4 pr-9">
-          <CardHeaderRow card={card} onPlusClick={handlePlusClick} />
-          <CardImage src={card.image} />
-        </div>
+        <ExpandedCardContent
+          card={card}
+          onMinimize={handleMinimizeClick}
+          onOpenSidePanel={onOpenSidePanel}
+        />
       )}
     </article>
   );

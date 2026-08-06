@@ -7,12 +7,13 @@
   --color-grey: #989898;
   --color-light-grey: #ccc;
   --color-white: #ffffff;
-  --color-yellow: #f5e642;
+  --color-yellow: #ffe800;
+  --color-yellow-dot: #d9c500;
 }
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-kotoheim);
+  --font-mono: var(--font-kotoheim-mono);
 }
 
 * {
@@ -29,10 +30,83 @@ body {
 body {
   background: var(--color-black);
   color: var(--color-white);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-family: var(--font-kotoheim), system-ui, sans-serif;
   overflow-x: hidden;
 }
 
 .font-mono {
-  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-family: var(--font-kotoheim-mono), ui-monospace, monospace;
+}
+
+/* GT Kotoheim — Overline (Large), Small/Body, Overline (Small) */
+.text-overline-large {
+  font-family: var(--font-kotoheim-mono), ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  text-transform: uppercase;
+  font-feature-settings: "salt" 1;
+  text-box-trim: trim-both;
+  text-box-edge: cap alphabetic;
+}
+
+.text-body-small {
+  font-family: var(--font-kotoheim), system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 350;
+  line-height: 1.25;
+  font-feature-settings: "salt" 1;
+}
+
+.text-overline-small {
+  font-family: var(--font-kotoheim-mono), ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.18px;
+  text-transform: uppercase;
+  font-feature-settings: "salt" 1;
+}
+
+/* GT Kotoheim — Large/Headline (Condensed Light 32) */
+.text-headline-large {
+  font-family: var(--font-kotoheim), system-ui, sans-serif;
+  font-size: 32px;
+  font-weight: 300;
+  line-height: 1.15;
+  font-stretch: 75%;
+  font-variation-settings: "wght" 300, "wdth" 75;
+  font-feature-settings: "salt" 1;
+}
+
+/* GT Kotoheim — Large/Title (Condensed Light 24) */
+.text-title-large {
+  font-family: var(--font-kotoheim), system-ui, sans-serif;
+  font-size: 24px;
+  font-weight: 300;
+  line-height: 1.2;
+  font-stretch: 75%;
+  font-variation-settings: "wght" 300, "wdth" 75;
+  font-feature-settings: "salt" 1;
+}
+
+/* GT Kotoheim — Large/Body */
+.text-body-large {
+  font-family: var(--font-kotoheim), system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 350;
+  line-height: 1.25;
+  font-feature-settings: "salt" 1;
+}
+
+/* GT Kotoheim Mono — caption under gallery images */
+.text-caption-mono {
+  font-family: var(--font-kotoheim-mono), ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.36px;
+  font-feature-settings: "salt" 1;
+  text-box-trim: trim-both;
+  text-box-edge: cap alphabetic;
 }

@@ -62,7 +62,7 @@ export function OfficeWidget() {
             type="button"
             onClick={goPrev}
             aria-label="Previous office"
-            className="flex items-center justify-center rounded-sm bg-white/5 p-2 backdrop-blur-[40px] transition-colors hover:bg-white/10"
+            className="flex items-center justify-center rounded-sm bg-white/10 p-2 transition-colors hover:bg-white/15"
           >
             <ChevronLeftIcon className="text-white" />
           </button>
@@ -70,7 +70,7 @@ export function OfficeWidget() {
             type="button"
             onClick={goNext}
             aria-label="Next office"
-            className="flex items-center justify-center rounded-sm bg-white/5 p-2 backdrop-blur-[40px] transition-colors hover:bg-white/10"
+            className="flex items-center justify-center rounded-sm bg-white/10 p-2 transition-colors hover:bg-white/15"
           >
             <ChevronRightIcon className="text-white" />
           </button>

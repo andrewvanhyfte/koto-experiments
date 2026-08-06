@@ -1,0 +1,125 @@
+"use client";
+
+import Image from "next/image";
+import { getCardDeepDive, type PlayCardData } from "@/lib/play-cards";
+import { CloseIcon } from "@/components/ui/Icons";
+import { MediaControls } from "./MediaControls";
+
+type SidePanelProps = {
+  card: PlayCardData;
+  onClose: () => void;
+};
+
+function isAnimatedSrc(src: string) {
+  return /\.gif($|\?)/i.test(src);
+}
+
+export function SidePanel({ card, onClose }: SidePanelProps) {
+  const deepDive = getCardDeepDive(card);
+
+  return (
+    <aside
+      className="absolute inset-y-0 right-0 z-50 flex w-[min(938px,62%)] flex-col bg-[var(--color-black)]"
+      aria-label={`${card.title} deep dive`}
+    >
+      <button
+        type="button"
+        aria-label="Close side panel"
+        className="absolute top-4 right-full z-50 mr-4 flex size-11 items-center justify-center rounded-[2px] bg-[var(--color-black)] text-white transition-opacity hover:opacity-80"
+        onClick={onClose}
+      >
+        <CloseIcon className="size-2.5" />
+      </button>
+
+      <div className="flex min-h-0 flex-1 flex-col gap-[120px] overflow-y-auto px-7 py-6">
+        <header className="flex w-full shrink-0 items-center justify-between gap-4 whitespace-nowrap">
+          <p className="text-overline-large shrink-0 text-white">
+            {card.category}
+          </p>
+          <p className="text-body-small truncate text-[var(--color-grey)]">
+            {card.tools}
+          </p>
+        </header>
+
+        <div className="flex w-full flex-col gap-9 pb-16">
+          <div className="flex flex-col">
+            <h1 className="text-headline-large text-white">{card.title}</h1>
+            <p className="text-headline-large text-[var(--color-grey)]">
+              {card.subtitle}
+            </p>
+          </div>
+
+          <div className="relative w-full overflow-hidden rounded-md">
+            <div className="relative aspect-[1144/642] w-full">
+              <Image
+                src={deepDive.heroImage}
+                alt=""
+                fill
+                className="object-cover"
+                sizes="(max-width: 1512px) 62vw, 938px"
+                priority
+                unoptimized={isAnimatedSrc(deepDive.heroImage)}
+              />
+              <MediaControls />
+            </div>
+          </div>
+
+          <section className="flex w-full flex-col gap-6">
+            <div className="border-t border-white/10 pt-4">
+              <div className="text-overline-large flex items-center gap-2 uppercase">
+                <span className="text-white">{deepDive.sectionIndex}</span>
+                <span className="text-[var(--color-grey)]">
+                  {deepDive.sectionTitle}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex w-full flex-col items-end gap-6 pb-9">
+              <p className="text-title-large w-full text-[var(--color-grey)]">
+                {deepDive.description}
+              </p>
+              <p className="text-body-large w-full max-w-[433px] text-[var(--color-grey)]">
+                {deepDive.body}
+              </p>
+            </div>
+
+            <div className="relative flex w-full gap-4 overflow-x-auto pb-2">
+              <div className="pointer-events-none absolute left-[589px] top-11 z-[4] hidden items-center gap-1.5 mix-blend-difference xl:flex">
+                <span className="text-overline-large text-white">next</span>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/icons/side-panel-next.svg"
+                  alt=""
+                  className="size-2.5"
+                />
+              </div>
+
+              {deepDive.gallery.map((item) => (
+                <figure
+                  key={item.src + item.caption}
+                  className="flex w-[319px] shrink-0 flex-col gap-3"
+                >
+                  <div
+                    className={`relative w-full overflow-hidden rounded-md ${item.aspectClass}`}
+                  >
+                    <Image
+                      src={item.src}
+                      alt=""
+                      fill
+                      className="object-cover"
+                      sizes="319px"
+                      unoptimized={isAnimatedSrc(item.src)}
+                    />
+                  </div>
+                  <figcaption className="text-caption-mono text-[var(--color-grey)]">
+                    {item.caption}
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          </section>
+        </div>
+      </div>
+    </aside>
+  );
+}
