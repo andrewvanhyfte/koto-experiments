@@ -15,14 +15,16 @@ export function TopBarExposed() {
         <button
           type="button"
           onClick={goHome}
-          className="relative block h-full w-20 shrink-0 transition-opacity hover:opacity-80"
+          className="relative block h-[26px] w-[52px] shrink-0 transition-opacity hover:opacity-80"
           aria-label="Koto home"
         >
+          {/* Match koto.com wordmark: 52×26 (viewBox 0 0 52 26). */}
           <Image
             src={assets.kotoLogoSmile}
             alt="Koto"
-            fill
-            className="object-contain"
+            width={52}
+            height={26}
+            className="h-full w-full object-contain"
             priority
           />
         </button>
