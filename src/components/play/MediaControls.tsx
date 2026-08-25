@@ -5,7 +5,7 @@ export function MediaControls() {
   return (
     <div className="pointer-events-none absolute inset-0 z-[2] flex items-end justify-end p-3">
       <div className="relative size-[26px]">
-        <div className="absolute inset-0 flex items-center justify-center rounded-2xl p-2 backdrop-blur-[40px] mix-blend-exclusion">
+        <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/20 p-2 mix-blend-exclusion">
           <svg
             className="size-2.5 text-white"
             viewBox="0 0 10 10"

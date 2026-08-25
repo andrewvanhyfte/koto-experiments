@@ -35,8 +35,16 @@ function cardThumb(card: PlayCardData) {
   return card.thumbImage ?? card.image;
 }
 
-function isAnimatedSrc(src: string) {
+function isGifSrc(src: string) {
   return /\.gif($|\?)/i.test(src);
+}
+
+function isVideoSrc(src: string) {
+  return /\.(mp4|webm|mov)($|\?)/i.test(src);
+}
+
+function isAnimatedSrc(src: string) {
+  return isGifSrc(src) || isVideoSrc(src);
 }
 
 /** Shared − / + control used in expand header and minimized row. */
@@ -98,15 +106,35 @@ function CardCopy({
 function CardImage({ src }: { src: string }) {
   return (
     <div className="relative min-h-0 w-full flex-1 overflow-hidden rounded-md bg-gradient-to-b from-[rgba(6,6,6,0.3)] to-[#060606]">
-      <Image
-        src={src}
-        alt=""
-        fill
-        className="object-cover"
-        draggable={false}
-        sizes="464px"
-        unoptimized={isAnimatedSrc(src)}
-      />
+      {isVideoSrc(src) ? (
+        <video
+          src={src}
+          className="absolute inset-0 h-full w-full object-cover"
+          autoPlay
+          muted
+          loop
+          playsInline
+          draggable={false}
+        />
+      ) : isGifSrc(src) ? (
+        // Native <img> — Next/Image freezes GIFs in Chromium.
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={src}
+          alt=""
+          draggable={false}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      ) : (
+        <Image
+          src={src}
+          alt=""
+          fill
+          className="object-cover"
+          draggable={false}
+          sizes="464px"
+        />
+      )}
       <MediaControls />
     </div>
   );

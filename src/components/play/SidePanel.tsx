@@ -10,8 +10,12 @@ type SidePanelProps = {
   onClose: () => void;
 };
 
-function isAnimatedSrc(src: string) {
+function isGifSrc(src: string) {
   return /\.gif($|\?)/i.test(src);
+}
+
+function isVideoSrc(src: string) {
+  return /\.(mp4|webm|mov)($|\?)/i.test(src);
 }
 
 /** Figma Panel / Desktop — 938×850 on a 1512 artboard (≈62%). */
@@ -46,15 +50,26 @@ export function SidePanel({ card }: SidePanelProps) {
 
           <div className="relative w-full overflow-hidden rounded-md">
             <div className="relative aspect-[882/495] w-full">
-              <Image
-                src={deepDive.heroImage}
-                alt=""
-                fill
-                className="object-cover"
-                sizes="(max-width: 1512px) 62vw, 938px"
-                priority
-                unoptimized={isAnimatedSrc(deepDive.heroImage)}
-              />
+              {isVideoSrc(deepDive.heroImage) ? (
+                <video
+                  src={deepDive.heroImage}
+                  className="absolute inset-0 h-full w-full object-cover"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                />
+              ) : (
+                <Image
+                  src={deepDive.heroImage}
+                  alt=""
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 1512px) 62vw, 938px"
+                  priority
+                  unoptimized={isGifSrc(deepDive.heroImage)}
+                />
+              )}
               <MediaControls />
             </div>
           </div>
@@ -103,7 +118,7 @@ export function SidePanel({ card }: SidePanelProps) {
                       fill
                       className="object-cover"
                       sizes="319px"
-                      unoptimized={isAnimatedSrc(item.src)}
+                      unoptimized={isGifSrc(item.src)}
                     />
                   </div>
                   <figcaption className="text-caption-mono text-[var(--color-grey)]">
